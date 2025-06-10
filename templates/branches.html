@@ -42,8 +42,8 @@
 
 <div class="container mt-4">
   <h2>Branch Management</h2>
+  <form method="POST" action="/add_branch" enctype="multipart/form-data" class="row g-3 align-items-center mb-4">
 
-  <form method="POST" action="/add_branch" class="row g-3 align-items-center mb-4">
     <div class="col-md-3">
       <input type="text" class="form-control" name="name" placeholder="Name" required />
     </div>
@@ -54,12 +54,18 @@
       <input type="text" class="form-control" name="phone" placeholder="Phone" required />
     </div>
     <div class="col-md-3">
-      <input type="url" class="form-control" name="logo" placeholder="Logo URL" />
+      <input type="file" class="form-control" name="logo" accept="image/*" />
     </div>
-    <div class="col-md-1">
+    <div class="col-md-1 d-grid">
       <button type="submit" class="btn btn-primary w-100">Add</button>
     </div>
   </form>
+  
+  <!-- Preview image below form -->
+  <div class="mt-2">
+    <img id="logoPreview" src="#" alt="Logo Preview" style="display: none; width: 50px; height: 50px;" class="img-thumbnail" />
+  </div>
+  
 
   <table class="table table-bordered table-hover align-middle">
     <thead class="table-primary">
@@ -69,6 +75,7 @@
         <th>Email</th>
         <th>Phone</th>
         <th>Logo</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -84,6 +91,42 @@
           {% else %}
             -
           {% endif %}
+        </td>
+        <td>
+          <a href="/delete_branch/{{ b.Id }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+          <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ b.Id }}">Edit</button>
+
+          <!-- Edit Modal -->
+          <div class="modal fade" id="editModal{{ b.Id }}" tabindex="-1" aria-labelledby="editModalLabel{{ b.Id }}" aria-hidden="true">
+            <div class="modal-dialog">
+              <form method="POST" action="/update_branch/{{ b.Id }}" enctype="multipart/form-data">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel{{ b.Id }}">Edit Branch</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="mb-3">
+                      <input type="text" class="form-control" name="name" value="{{ b.Name }}" required>
+                    </div>
+                    <div class="mb-3">
+                      <input type="email" class="form-control" name="email" value="{{ b.Email }}" required>
+                    </div>
+                    <div class="mb-3">
+                      <input type="text" class="form-control" name="phone" value="{{ b.Phone }}" required>
+                    </div>
+                    <div class="mb-3">
+                      <input type="file" class="form-control" name="logo" accept="image/*">
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
         </td>
       </tr>
       {% endfor %}
