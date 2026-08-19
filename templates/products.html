@@ -1,154 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Product Management</title>
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="/">CRUD System</a>
-    <button
-      class="navbar-toggler"
-      type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navbarNav"
-      aria-controls="navbarNav"
-      aria-expanded="false"
-      aria-label="Toggle navigation"
-    >
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link" href="/branches">Branches</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/categories">Categories</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="/products">Products</a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</nav>
-
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary"><div class="container-fluid"><a class="navbar-brand" href="{{ url_for('index') }}">CRUD System</a><button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button><div class="collapse navbar-collapse" id="navbarNav"><ul class="navbar-nav"><li class="nav-item"><a class="nav-link" href="{{ url_for('branches') }}">Branches</a></li><li class="nav-item"><a class="nav-link" href="{{ url_for('categories') }}">Categories</a></li><li class="nav-item"><a class="nav-link active" href="{{ url_for('products') }}">Products</a></li></ul></div></div></nav>
 <div class="container mt-4">
   <h2>Product Management</h2>
-
-  <form method="POST" action="/add_product" class="row g-3 align-items-center mb-4">
-    <div class="col-md-3">
-      <input type="text" class="form-control" name="name" placeholder="Product Name" required />
-    </div>
-    <div class="col-md-2">
-      <input type="number" step="0.01" class="form-control" name="cost" placeholder="Cost" required />
-    </div>
-    <div class="col-md-2">
-      <input type="number" step="0.01" class="form-control" name="price" placeholder="Price" required />
-    </div>
-    <div class="col-md-2">
-      <select name="category" class="form-select" required>
-        <option value="" disabled selected>Select Category</option>
-        {% for c in categories %}
-          <option value="{{ c.Id }}">{{ c.Name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-2">
-      <select name="branch" class="form-select" required>
-        <option value="" disabled selected>Select Branch</option>
-        {% for b in branches %}
-          <option value="{{ b.Id }}">{{ b.Name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-1 d-grid">
-      <button type="submit" class="btn btn-primary">Add</button>
-    </div>
+  {% if not categories or not branches %}<div class="alert alert-warning">Create at least one branch and one category before adding products.</div>{% endif %}
+  <form method="POST" action="{{ url_for('add_product') }}" class="row g-3 align-items-center mb-4">
+    <div class="col-md-3"><input type="text" class="form-control" name="name" placeholder="Product Name" required></div>
+    <div class="col-md-2"><input type="number" min="0" step="0.01" class="form-control" name="cost" placeholder="Cost" required></div>
+    <div class="col-md-2"><input type="number" min="0" step="0.01" class="form-control" name="price" placeholder="Price" required></div>
+    <div class="col-md-2"><select name="category" class="form-select" required {% if not categories %}disabled{% endif %}><option value="" selected disabled>Select Category</option>{% for c in categories %}<option value="{{ c.Id }}">{{ c.Name }}</option>{% endfor %}</select></div>
+    <div class="col-md-2"><select name="branch" class="form-select" required {% if not branches %}disabled{% endif %}><option value="" selected disabled>Select Branch</option>{% for b in branches %}<option value="{{ b.Id }}">{{ b.Name }}</option>{% endfor %}</select></div>
+    <div class="col-md-1 d-grid"><button type="submit" class="btn btn-primary" {% if not categories or not branches %}disabled{% endif %}>Add</button></div>
   </form>
-
-  <table class="table table-bordered table-hover align-middle">
-    <thead class="table-primary">
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Cost</th>
-        <th>Price</th>
-        <th>Category</th>
-        <th>Branch</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for p in products %}
-      <tr>
-        <td>{{ p.Id }}</td>
-        <td>{{ p.Name }}</td>
-        <td>{{ p.Cost }}</td>
-        <td>{{ p.Price }}</td>
-        <td>{{ p.CategoryName }}</td>
-        <td>{{ p.BranchName }}</td>
-        <td>
-          <a href="/delete_product/{{ p.Id }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
-          <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ p.Id }}">Edit</button>
-
-          <!-- Edit Modal -->
-          <div class="modal fade" id="editModal{{ p.Id }}" tabindex="-1" aria-labelledby="editModalLabel{{ p.Id }}" aria-hidden="true">
-            <div class="modal-dialog">
-              <form method="POST" action="/update_product/{{ p.Id }}">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="editModalLabel{{ p.Id }}">Edit Product</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-body">
-                    <div class="mb-3">
-                      <input type="text" class="form-control" name="name" value="{{ p.Name }}" required>
-                    </div>
-                    <div class="mb-3">
-                      <input type="number" step="0.01" class="form-control" name="cost" value="{{ p.Cost }}" required>
-                    </div>
-                    <div class="mb-3">
-                      <input type="number" step="0.01" class="form-control" name="price" value="{{ p.Price }}" required>
-                    </div>
-                    <div class="mb-3">
-                      <select name="category" class="form-select" required>
-                        {% for c in categories %}
-                          <option value="{{ c.Id }}" {% if c.Id == p.CategoryId %}selected{% endif %}>{{ c.Name }}</option>
-                        {% endfor %}
-                      </select>
-                    </div>
-                    <div class="mb-3">
-                      <select name="branch" class="form-select" required>
-                        {% for b in branches %}
-                          <option value="{{ b.Id }}" {% if b.Id == p.BranchId %}selected{% endif %}>{{ b.Name }}</option>
-                        {% endfor %}
-                      </select>
-                    </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-
-<!-- Bootstrap JS Bundle -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+  <div class="table-responsive"><table class="table table-bordered table-hover align-middle"><thead class="table-primary"><tr><th>ID</th><th>Name</th><th>Cost</th><th>Price</th><th>Category</th><th>Branch</th><th>Actions</th></tr></thead><tbody>
+  {% for p in products %}<tr><td>{{ p.Id }}</td><td>{{ p.Name }}</td><td>{{ '%.2f'|format(p.Cost) }}</td><td>{{ '%.2f'|format(p.Price) }}</td><td>{{ p.CategoryName }}</td><td>{{ p.BranchName }}</td><td class="text-nowrap"><form method="POST" action="{{ url_for('delete_product', id=p.Id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this product?');"><button class="btn btn-sm btn-danger">Delete</button></form><button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ p.Id }}">Edit</button><div class="modal fade" id="editModal{{ p.Id }}" tabindex="-1" aria-hidden="true"><div class="modal-dialog"><form method="POST" action="{{ url_for('update_product', id=p.Id) }}"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Edit Product</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="mb-3"><label class="form-label">Name</label><input type="text" class="form-control" name="name" value="{{ p.Name }}" required></div><div class="mb-3"><label class="form-label">Cost</label><input type="number" min="0" step="0.01" class="form-control" name="cost" value="{{ p.Cost }}" required></div><div class="mb-3"><label class="form-label">Price</label><input type="number" min="0" step="0.01" class="form-control" name="price" value="{{ p.Price }}" required></div><div class="mb-3"><label class="form-label">Category</label><select name="category" class="form-select" required>{% for c in categories %}<option value="{{ c.Id }}" {% if c.Id == p.CategoryId %}selected{% endif %}>{{ c.Name }}</option>{% endfor %}</select></div><div class="mb-3"><label class="form-label">Branch</label><select name="branch" class="form-select" required>{% for b in branches %}<option value="{{ b.Id }}" {% if b.Id == p.BranchId %}selected{% endif %}>{{ b.Name }}</option>{% endfor %}</select></div></div><div class="modal-footer"><button type="submit" class="btn btn-primary">Save Changes</button><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button></div></div></form></div></div></td></tr>
+  {% else %}<tr><td colspan="7" class="text-center text-muted">No products yet.</td></tr>{% endfor %}</tbody></table></div>
+</div><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script></body></html>
